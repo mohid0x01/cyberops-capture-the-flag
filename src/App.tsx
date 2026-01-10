@@ -18,6 +18,8 @@ import Teams from "./pages/Teams";
 import Writeups from "./pages/Writeups";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
+import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,10 +39,13 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/challenges" element={<ProtectedRoute><Challenges /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/challenges/:id" element={<ProtectedRoute><ChallengeDetail /><LiveNotifications /></ProtectedRoute>} />
+              <Route path="/categories" element={<ProtectedRoute><Categories /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/teams" element={<ProtectedRoute><Teams /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/writeups" element={<ProtectedRoute><Writeups /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /><LiveNotifications /></ProtectedRoute>} />
+              <Route path="/profile/:userId" element={<ProtectedRoute><Profile /><LiveNotifications /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
