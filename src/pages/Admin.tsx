@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone } from "lucide-react";
+import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import ChallengeFileUpload from "@/components/ChallengeFileUpload";
 
 interface Writeup {
   id: string;
@@ -51,6 +52,7 @@ const Admin = () => {
   const [writeups, setWriteups] = useState<Writeup[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [competitionSettings, setCompetitionSettings] = useState<CompetitionSettings | null>(null);
+  const [editingChallenge, setEditingChallenge] = useState<any | null>(null);
   const [newChallenge, setNewChallenge] = useState({
     title: "",
     description: "",
@@ -60,6 +62,7 @@ const Admin = () => {
     flag: "",
     hints: "",
     hint_costs: "",
+    files: [] as string[],
   });
   const [newAnnouncement, setNewAnnouncement] = useState<{
     title: string;
@@ -107,6 +110,7 @@ const Admin = () => {
       flag: newChallenge.flag,
       hints: hintsArray,
       hint_costs: costsArray,
+      files: newChallenge.files,
     } as any);
 
     if (error) {
@@ -123,7 +127,38 @@ const Admin = () => {
       flag: "",
       hints: "",
       hint_costs: "",
+      files: [],
     });
+    fetchData();
+  };
+
+  const updateChallenge = async () => {
+    if (!editingChallenge) return;
+    
+    const hintsArray = editingChallenge.hintsText?.split("\n").filter((h: string) => h.trim()) || editingChallenge.hints || [];
+    const costsArray = editingChallenge.hintCostsText?.split(",").map((c: string) => parseInt(c.trim())).filter((c: number) => !isNaN(c)) || editingChallenge.hint_costs || [];
+
+    const { error } = await supabase
+      .from("challenges")
+      .update({
+        title: editingChallenge.title,
+        description: editingChallenge.description,
+        category: editingChallenge.category,
+        difficulty: editingChallenge.difficulty,
+        points: editingChallenge.points,
+        flag: editingChallenge.flag,
+        hints: hintsArray,
+        hint_costs: costsArray,
+        files: editingChallenge.files || [],
+      })
+      .eq("id", editingChallenge.id);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Challenge updated!");
+    setEditingChallenge(null);
     fetchData();
   };
 
@@ -288,6 +323,72 @@ const Admin = () => {
                   </div>
                 </DialogContent>
               </Dialog>
+
+              {/* Edit Challenge Dialog */}
+              <Dialog open={!!editingChallenge} onOpenChange={(open) => !open && setEditingChallenge(null)}>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle>Edit Challenge</DialogTitle></DialogHeader>
+                  {editingChallenge && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Title</Label>
+                        <Input value={editingChallenge.title} onChange={(e) => setEditingChallenge({ ...editingChallenge, title: e.target.value })} />
+                      </div>
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea className="min-h-[100px]" value={editingChallenge.description} onChange={(e) => setEditingChallenge({ ...editingChallenge, description: e.target.value })} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Category</Label>
+                          <Select value={editingChallenge.category} onValueChange={(v) => setEditingChallenge({ ...editingChallenge, category: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>{["web", "crypto", "reverse", "forensics", "pwn", "scripting", "misc"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Difficulty</Label>
+                          <Select value={editingChallenge.difficulty} onValueChange={(v) => setEditingChallenge({ ...editingChallenge, difficulty: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>{["easy", "medium", "hard", "insane"].map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Points</Label>
+                        <Input type="number" value={editingChallenge.points} onChange={(e) => setEditingChallenge({ ...editingChallenge, points: parseInt(e.target.value) || 0 })} />
+                      </div>
+                      <div>
+                        <Label>Flag</Label>
+                        <Input value={editingChallenge.flag} onChange={(e) => setEditingChallenge({ ...editingChallenge, flag: e.target.value })} />
+                      </div>
+                      <div>
+                        <Label>Hints (one per line)</Label>
+                        <Textarea 
+                          value={editingChallenge.hintsText ?? (editingChallenge.hints || []).join("\n")} 
+                          onChange={(e) => setEditingChallenge({ ...editingChallenge, hintsText: e.target.value })} 
+                        />
+                      </div>
+                      <div>
+                        <Label>Hint Costs (comma-separated)</Label>
+                        <Input 
+                          value={editingChallenge.hintCostsText ?? (editingChallenge.hint_costs || []).join(", ")} 
+                          onChange={(e) => setEditingChallenge({ ...editingChallenge, hintCostsText: e.target.value })} 
+                        />
+                      </div>
+                      <div>
+                        <Label>Challenge Files</Label>
+                        <ChallengeFileUpload
+                          challengeId={editingChallenge.id}
+                          existingFiles={editingChallenge.files || []}
+                          onFilesUpdated={(files) => setEditingChallenge({ ...editingChallenge, files })}
+                        />
+                      </div>
+                      <Button onClick={updateChallenge} variant="hero" className="w-full">Update Challenge</Button>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               {challenges.length === 0 ? (
@@ -297,12 +398,26 @@ const Admin = () => {
                   {challenges.map((c) => (
                     <div key={c.id} className="px-6 py-4 flex items-center justify-between">
                       <div>
-                        <div className="font-mono font-semibold">{c.title}</div>
+                        <div className="font-mono font-semibold flex items-center gap-2">
+                          {c.title}
+                          {c.files && c.files.length > 0 && (
+                            <span className="text-xs text-primary font-normal">({c.files.length} files)</span>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">{c.category} • {c.difficulty} • {c.points} pts • {c.solves} solves</div>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => deleteChallenge(c.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setEditingChallenge(c)}
+                        >
+                          <Edit className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteChallenge(c.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

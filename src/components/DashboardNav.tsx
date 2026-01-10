@@ -10,7 +10,9 @@ import {
   LogOut,
   ShieldCheck,
   Menu,
-  X
+  X,
+  Layers,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,9 +32,11 @@ const DashboardNav = () => {
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { label: "Challenges", href: "/challenges", icon: Target },
+    { label: "Categories", href: "/categories", icon: Layers },
     { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
     { label: "Teams", href: "/teams", icon: Users },
     { label: "Writeups", href: "/writeups", icon: FileText },
+    { label: "Profile", href: "/profile", icon: User },
     { label: "Settings", href: "/settings", icon: Settings },
   ];
 
