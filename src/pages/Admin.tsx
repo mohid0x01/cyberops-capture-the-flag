@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit } from "lucide-react";
+import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit, Award, Image } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,14 +45,26 @@ interface Announcement {
   created_at: string;
 }
 
+interface Sponsor {
+  id: string;
+  name: string;
+  logo_url: string;
+  website_url: string | null;
+  tier: "platinum" | "gold" | "silver" | "bronze";
+  is_active: boolean;
+  display_order: number;
+}
+
 const Admin = () => {
   const { profile } = useAuth();
   const [challenges, setChallenges] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [writeups, setWriteups] = useState<Writeup[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [competitionSettings, setCompetitionSettings] = useState<CompetitionSettings | null>(null);
   const [editingChallenge, setEditingChallenge] = useState<any | null>(null);
+  const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [newChallenge, setNewChallenge] = useState({
     title: "",
     description: "",
@@ -73,6 +85,13 @@ const Admin = () => {
     content: "",
     priority: "normal",
   });
+  const [newSponsor, setNewSponsor] = useState({
+    name: "",
+    logo_url: "",
+    website_url: "",
+    tier: "bronze" as "platinum" | "gold" | "silver" | "bronze",
+    display_order: 0,
+  });
 
   const fetchData = async () => {
     const { data: c } = await supabase.from("challenges").select("*").order("created_at", { ascending: false });
@@ -88,6 +107,8 @@ const Admin = () => {
     if (cs) setCompetitionSettings(cs as CompetitionSettings);
     const { data: ann } = await supabase.from("announcements").select("*").order("created_at", { ascending: false });
     if (ann) setAnnouncements(ann as Announcement[]);
+    const { data: sp } = await supabase.from("sponsors").select("*").order("display_order", { ascending: true });
+    if (sp) setSponsors(sp as Sponsor[]);
   };
 
   useEffect(() => {
@@ -242,6 +263,65 @@ const Admin = () => {
     fetchData();
   };
 
+  // Sponsor functions
+  const createSponsor = async () => {
+    if (!newSponsor.name || !newSponsor.logo_url) {
+      toast.error("Please fill in name and logo URL");
+      return;
+    }
+
+    const { error } = await supabase.from("sponsors").insert({
+      name: newSponsor.name,
+      logo_url: newSponsor.logo_url,
+      website_url: newSponsor.website_url || null,
+      tier: newSponsor.tier,
+      display_order: newSponsor.display_order,
+    });
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Sponsor added!");
+    setNewSponsor({ name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0 });
+    fetchData();
+  };
+
+  const updateSponsor = async () => {
+    if (!editingSponsor) return;
+
+    const { error } = await supabase
+      .from("sponsors")
+      .update({
+        name: editingSponsor.name,
+        logo_url: editingSponsor.logo_url,
+        website_url: editingSponsor.website_url,
+        tier: editingSponsor.tier,
+        display_order: editingSponsor.display_order,
+      })
+      .eq("id", editingSponsor.id);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Sponsor updated!");
+    setEditingSponsor(null);
+    fetchData();
+  };
+
+  const deleteSponsor = async (id: string) => {
+    await supabase.from("sponsors").delete().eq("id", id);
+    toast.success("Sponsor deleted");
+    fetchData();
+  };
+
+  const toggleSponsorActive = async (id: string, isActive: boolean) => {
+    await supabase.from("sponsors").update({ is_active: !isActive }).eq("id", id);
+    toast.success(isActive ? "Sponsor hidden" : "Sponsor visible");
+    fetchData();
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto">
@@ -256,6 +336,9 @@ const Admin = () => {
             <TabsTrigger value="users"><Users className="mr-2 h-4 w-4" />Users</TabsTrigger>
             <TabsTrigger value="announcements">
               <Megaphone className="mr-2 h-4 w-4" />Announcements
+            </TabsTrigger>
+            <TabsTrigger value="sponsors">
+              <Award className="mr-2 h-4 w-4" />Sponsors
             </TabsTrigger>
             <TabsTrigger value="writeups" className="relative">
               <FileText className="mr-2 h-4 w-4" />Writeups
@@ -563,6 +646,175 @@ const Admin = () => {
                       <div className="flex items-center gap-2">
                         <Switch checked={a.is_active} onCheckedChange={() => toggleAnnouncementActive(a.id, a.is_active)} />
                         <Button variant="ghost" size="sm" onClick={() => deleteAnnouncement(a.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Sponsors Tab */}
+          <TabsContent value="sponsors">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-display text-xl font-bold">Sponsors ({sponsors.length})</h2>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="hero"><Plus className="mr-2 h-4 w-4" />Add Sponsor</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader><DialogTitle>Add Sponsor</DialogTitle></DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Name</Label>
+                      <Input 
+                        value={newSponsor.name} 
+                        onChange={(e) => setNewSponsor({ ...newSponsor, name: e.target.value })} 
+                        placeholder="Sponsor Name"
+                      />
+                    </div>
+                    <div>
+                      <Label>Logo URL</Label>
+                      <Input 
+                        value={newSponsor.logo_url} 
+                        onChange={(e) => setNewSponsor({ ...newSponsor, logo_url: e.target.value })}
+                        placeholder="https://example.com/logo.png"
+                      />
+                    </div>
+                    <div>
+                      <Label>Website URL (optional)</Label>
+                      <Input 
+                        value={newSponsor.website_url} 
+                        onChange={(e) => setNewSponsor({ ...newSponsor, website_url: e.target.value })}
+                        placeholder="https://sponsor-website.com"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Tier</Label>
+                        <Select 
+                          value={newSponsor.tier} 
+                          onValueChange={(v: "platinum" | "gold" | "silver" | "bronze") => setNewSponsor({ ...newSponsor, tier: v })}
+                        >
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="platinum">Platinum</SelectItem>
+                            <SelectItem value="gold">Gold</SelectItem>
+                            <SelectItem value="silver">Silver</SelectItem>
+                            <SelectItem value="bronze">Bronze</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Display Order</Label>
+                        <Input 
+                          type="number"
+                          value={newSponsor.display_order} 
+                          onChange={(e) => setNewSponsor({ ...newSponsor, display_order: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={createSponsor} variant="hero" className="w-full">Add Sponsor</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Edit Sponsor Dialog */}
+              <Dialog open={!!editingSponsor} onOpenChange={(open) => !open && setEditingSponsor(null)}>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader><DialogTitle>Edit Sponsor</DialogTitle></DialogHeader>
+                  {editingSponsor && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Name</Label>
+                        <Input 
+                          value={editingSponsor.name} 
+                          onChange={(e) => setEditingSponsor({ ...editingSponsor, name: e.target.value })} 
+                        />
+                      </div>
+                      <div>
+                        <Label>Logo URL</Label>
+                        <Input 
+                          value={editingSponsor.logo_url} 
+                          onChange={(e) => setEditingSponsor({ ...editingSponsor, logo_url: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label>Website URL</Label>
+                        <Input 
+                          value={editingSponsor.website_url || ""} 
+                          onChange={(e) => setEditingSponsor({ ...editingSponsor, website_url: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Tier</Label>
+                          <Select 
+                            value={editingSponsor.tier} 
+                            onValueChange={(v: "platinum" | "gold" | "silver" | "bronze") => setEditingSponsor({ ...editingSponsor, tier: v })}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="platinum">Platinum</SelectItem>
+                              <SelectItem value="gold">Gold</SelectItem>
+                              <SelectItem value="silver">Silver</SelectItem>
+                              <SelectItem value="bronze">Bronze</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Display Order</Label>
+                          <Input 
+                            type="number"
+                            value={editingSponsor.display_order} 
+                            onChange={(e) => setEditingSponsor({ ...editingSponsor, display_order: parseInt(e.target.value) || 0 })}
+                          />
+                        </div>
+                      </div>
+                      <Button onClick={updateSponsor} variant="hero" className="w-full">Update Sponsor</Button>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              {sponsors.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground font-mono">No sponsors yet</div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {sponsors.map((s) => (
+                    <div key={s.id} className={`px-6 py-4 flex items-center justify-between ${!s.is_active ? 'opacity-50' : ''}`}>
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-10 rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center">
+                          {s.logo_url ? (
+                            <img src={s.logo_url} alt={s.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Image className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 text-xs rounded uppercase font-mono ${
+                              s.tier === 'platinum' ? 'bg-neon-cyan/20 text-neon-cyan' :
+                              s.tier === 'gold' ? 'bg-yellow-500/20 text-yellow-400' :
+                              s.tier === 'silver' ? 'bg-gray-400/20 text-gray-300' :
+                              'bg-orange-600/20 text-orange-400'
+                            }`}>{s.tier}</span>
+                            <span className="font-mono font-semibold">{s.name}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {s.website_url || "No website"} • Order: {s.display_order}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={s.is_active} onCheckedChange={() => toggleSponsorActive(s.id, s.is_active)} />
+                        <Button variant="ghost" size="sm" onClick={() => setEditingSponsor(s)}>
+                          <Edit className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteSponsor(s.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

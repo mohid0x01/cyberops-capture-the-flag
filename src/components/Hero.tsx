@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { ChevronRight, Terminal, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { Link } from "react-router-dom";
+import CountdownTimer from "./CountdownTimer";
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-grid">
@@ -60,15 +61,29 @@ const Hero = () => {
             transition={{ delay: 0.6 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Button variant="hero" size="xl">
-              <Zap className="mr-2 h-5 w-5" />
-              Start Hacking
-              <ChevronRight className="ml-2 h-5 w-5" />
+            <Button variant="hero" size="xl" asChild>
+              <Link to="/signup">
+                <Zap className="mr-2 h-5 w-5" />
+                Start Hacking
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Link>
             </Button>
-            <Button variant="hero-outline" size="xl">
-              <Terminal className="mr-2 h-5 w-5" />
-              View Challenges
+            <Button variant="hero-outline" size="xl" asChild>
+              <Link to="/login?redirect=/challenges">
+                <Terminal className="mr-2 h-5 w-5" />
+                View Challenges
+              </Link>
             </Button>
+          </motion.div>
+
+          {/* Countdown Timer */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mt-10"
+          >
+            <CountdownTimer />
           </motion.div>
 
           {/* Stats bar */}
