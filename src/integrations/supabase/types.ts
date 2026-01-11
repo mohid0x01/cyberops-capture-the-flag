@@ -201,6 +201,27 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean
+          subscribed_at: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -259,6 +280,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sponsors: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean
+          logo_url: string
+          name: string
+          tier: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          logo_url: string
+          name: string
+          tier?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string
+          name?: string
+          tier?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
       }
       submissions: {
         Row: {

@@ -1,52 +1,16 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Sponsor {
+  id: string;
   name: string;
-  logo: string;
-  url: string;
+  logo_url: string;
+  website_url: string | null;
   tier: "platinum" | "gold" | "silver" | "bronze";
+  display_order: number;
 }
-
-// Placeholder sponsors - in production, these would come from the database
-const sponsors: Sponsor[] = [
-  {
-    name: "CyberDefense Corp",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=100&fit=crop&auto=format",
-    url: "#",
-    tier: "platinum",
-  },
-  {
-    name: "SecureNet Labs",
-    logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&h=100&fit=crop&auto=format",
-    url: "#",
-    tier: "platinum",
-  },
-  {
-    name: "HackShield Inc",
-    logo: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&h=100&fit=crop&auto=format",
-    url: "#",
-    tier: "gold",
-  },
-  {
-    name: "CryptoGuard",
-    logo: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=200&h=100&fit=crop&auto=format",
-    url: "#",
-    tier: "gold",
-  },
-  {
-    name: "ByteSecure",
-    logo: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=200&h=100&fit=crop&auto=format",
-    url: "#",
-    tier: "silver",
-  },
-  {
-    name: "FireWall Pro",
-    logo: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200&h=100&fit=crop&auto=format",
-    url: "#",
-    tier: "silver",
-  },
-];
 
 const tierConfig = {
   platinum: {
@@ -72,6 +36,26 @@ const tierConfig = {
 };
 
 const Sponsors = () => {
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSponsors = async () => {
+      const { data } = await supabase
+        .from("sponsors")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (data) {
+        setSponsors(data as Sponsor[]);
+      }
+      setLoading(false);
+    };
+
+    fetchSponsors();
+  }, []);
+
   const groupedSponsors = sponsors.reduce((acc, sponsor) => {
     if (!acc[sponsor.tier]) {
       acc[sponsor.tier] = [];
@@ -86,6 +70,8 @@ const Sponsors = () => {
     "silver",
     "bronze",
   ];
+
+  const hasSponsors = sponsors.length > 0;
 
   return (
     <section className="py-20 bg-card/30 relative overflow-hidden">
@@ -116,56 +102,71 @@ const Sponsors = () => {
           </p>
         </motion.div>
 
-        <div className="space-y-12">
-          {tierOrder.map((tier) => {
-            const tierSponsors = groupedSponsors[tier];
-            if (!tierSponsors || tierSponsors.length === 0) return null;
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-flex items-center gap-2 text-muted-foreground">
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="font-mono text-sm">Loading sponsors...</span>
+            </div>
+          </div>
+        ) : hasSponsors ? (
+          <div className="space-y-12">
+            {tierOrder.map((tier) => {
+              const tierSponsors = groupedSponsors[tier];
+              if (!tierSponsors || tierSponsors.length === 0) return null;
 
-            const config = tierConfig[tier];
+              const config = tierConfig[tier];
 
-            return (
-              <motion.div
-                key={tier}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-6">
-                  {config.label}
-                </h3>
-                <div className="flex flex-wrap justify-center items-center gap-6">
-                  {tierSponsors.map((sponsor, index) => (
-                    <motion.a
-                      key={sponsor.name}
-                      href={sponsor.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05 }}
-                      className={`relative group ${config.size} rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300 ${config.glow}`}
-                    >
-                      <img
-                        src={sponsor.logo}
-                        alt={sponsor.name}
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
-                        <span className="text-xs font-mono text-foreground flex items-center gap-1">
-                          {sponsor.name}
-                          <ExternalLink className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </motion.a>
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+              return (
+                <motion.div
+                  key={tier}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-center"
+                >
+                  <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-6">
+                    {config.label}
+                  </h3>
+                  <div className="flex flex-wrap justify-center items-center gap-6">
+                    {tierSponsors.map((sponsor, index) => (
+                      <motion.a
+                        key={sponsor.id}
+                        href={sponsor.website_url || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.05 }}
+                        className={`relative group ${config.size} rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300 ${config.glow}`}
+                      >
+                        <img
+                          src={sponsor.logo_url}
+                          alt={sponsor.name}
+                          className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
+                          <span className="text-xs font-mono text-foreground flex items-center gap-1">
+                            {sponsor.name}
+                            <ExternalLink className="h-3 w-3" />
+                          </span>
+                        </div>
+                      </motion.a>
+                    ))}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground font-mono text-sm">
+              Sponsor spots available! Get in touch to support CyberOps.
+            </p>
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}
