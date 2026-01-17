@@ -2,8 +2,54 @@ import { motion } from "framer-motion";
 import { ChevronRight, Terminal, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import CountdownTimer from "./CountdownTimer";
+
 const Hero = () => {
+  const [stats, setStats] = useState({
+    activeHackers: 0,
+    challenges: 0,
+    prizes: "$50K",
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Fetch active hackers count (profiles count)
+      const { count: hackersCount } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+      // Fetch challenges count
+      const { count: challengesCount } = await supabase
+        .from("challenges_public")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+
+      setStats({
+        activeHackers: hackersCount || 0,
+        challenges: challengesCount || 0,
+        prizes: "$50K",
+      });
+      setLoading(false);
+    };
+
+    fetchStats();
+  }, []);
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
+  const StatSkeleton = () => (
+    <div className="text-center">
+      <Skeleton className="h-10 w-20 mx-auto mb-2 bg-primary/10" />
+      <Skeleton className="h-4 w-24 mx-auto bg-muted/20" />
+    </div>
+  );
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-grid">
       {/* Animated background elements */}
@@ -91,37 +137,45 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+            className="mt-16 pb-20 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
           >
-            {[
-              { value: "2,847", label: "Active Hackers" },
-              { value: "156", label: "Challenges" },
-              { value: "$50K", label: "In Prizes" },
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="font-display text-3xl md:text-4xl font-bold text-gradient">
-                  {stat.value}
+            {loading ? (
+              <>
+                <StatSkeleton />
+                <StatSkeleton />
+                <StatSkeleton />
+              </>
+            ) : (
+              [
+                { value: formatNumber(stats.activeHackers), label: "Active Hackers" },
+                { value: formatNumber(stats.challenges), label: "Challenges" },
+                { value: stats.prizes, label: "In Prizes" },
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="font-display text-3xl md:text-4xl font-bold text-gradient">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mt-1">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mt-1">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </motion.div>
         </motion.div>
-
-        {/* Terminal decoration */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground"
-        >
-          <span className="text-primary font-mono text-sm">root@cyberops:~$</span>
-          <span className="font-mono text-sm">scroll_down</span>
-          <span className="w-2 h-4 bg-primary animate-terminal-blink" />
-        </motion.div>
       </div>
+
+      {/* Terminal decoration - moved outside container for better positioning */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-muted-foreground z-10"
+      >
+        <span className="text-primary font-mono text-sm">root@cyberops:~$</span>
+        <span className="font-mono text-sm">scroll_down</span>
+        <span className="w-2 h-4 bg-primary animate-terminal-blink" />
+      </motion.div>
     </section>
   );
 };

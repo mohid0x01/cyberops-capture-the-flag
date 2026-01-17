@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, Shield, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,15 @@ const Navbar = () => {
     { label: "About", href: "#about" },
     { label: "Resources", href: "#resources" },
   ];
+
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    setIsOpen(false);
+  };
 
   return (
     <motion.nav
@@ -38,7 +48,8 @@ const Navbar = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors relative group"
+                onClick={(e) => handleSmoothScroll(e, item.href)}
+                className="text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors relative group cursor-pointer"
               >
                 {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
@@ -81,19 +92,23 @@ const Navbar = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="block py-3 text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => handleSmoothScroll(e, item.href)}
+                className="block py-3 text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors cursor-pointer"
               >
                 {item.label}
               </a>
             ))}
             <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border/50">
-              <Button variant="ghost" size="sm" className="justify-start">
-                <Terminal className="mr-2 h-4 w-4" />
-                Login
+              <Button variant="ghost" size="sm" className="justify-start" asChild>
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Terminal className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
               </Button>
-              <Button variant="hero" size="sm">
-                Join CTF
+              <Button variant="hero" size="sm" asChild>
+                <Link to="/signup" onClick={() => setIsOpen(false)}>
+                  Join CTF
+                </Link>
               </Button>
             </div>
           </motion.div>
