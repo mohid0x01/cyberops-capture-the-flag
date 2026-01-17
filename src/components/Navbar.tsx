@@ -14,6 +14,15 @@ const Navbar = () => {
     { label: "Resources", href: "#resources" },
   ];
 
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    setIsOpen(false);
+  };
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -39,7 +48,8 @@ const Navbar = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors relative group"
+                onClick={(e) => handleSmoothScroll(e, item.href)}
+                className="text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors relative group cursor-pointer"
               >
                 {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
@@ -82,8 +92,8 @@ const Navbar = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="block py-3 text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => handleSmoothScroll(e, item.href)}
+                className="block py-3 text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors cursor-pointer"
               >
                 {item.label}
               </a>
