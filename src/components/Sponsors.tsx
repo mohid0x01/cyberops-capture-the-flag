@@ -140,12 +140,12 @@ const Sponsors = () => {
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.1 }}
                         whileHover={{ scale: 1.05 }}
-                        className={`relative group ${config.size} rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300 ${config.glow}`}
+                        className={`relative group ${config.size} rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300 ${config.glow} flex items-center justify-center p-2`}
                       >
                         <img
                           src={sponsor.logo_url}
                           alt={sponsor.name}
-                          className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
+                          className="max-w-full max-h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
                           <span className="text-xs font-mono text-foreground flex items-center gap-1">

@@ -2,8 +2,44 @@ import { motion } from "framer-motion";
 import { ChevronRight, Terminal, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import CountdownTimer from "./CountdownTimer";
+
 const Hero = () => {
+  const [stats, setStats] = useState({
+    activeHackers: 0,
+    challenges: 0,
+    prizes: "$50K",
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Fetch active hackers count (profiles count)
+      const { count: hackersCount } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+      // Fetch challenges count
+      const { count: challengesCount } = await supabase
+        .from("challenges_public")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+
+      setStats({
+        activeHackers: hackersCount || 0,
+        challenges: challengesCount || 0,
+        prizes: "$50K",
+      });
+    };
+
+    fetchStats();
+  }, []);
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-grid">
       {/* Animated background elements */}
@@ -94,9 +130,9 @@ const Hero = () => {
             className="mt-16 pb-20 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
           >
             {[
-              { value: "2,847", label: "Active Hackers" },
-              { value: "156", label: "Challenges" },
-              { value: "$50K", label: "In Prizes" },
+              { value: formatNumber(stats.activeHackers), label: "Active Hackers" },
+              { value: formatNumber(stats.challenges), label: "Challenges" },
+              { value: stats.prizes, label: "In Prizes" },
             ].map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="font-display text-3xl md:text-4xl font-bold text-gradient">
