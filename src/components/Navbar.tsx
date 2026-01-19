@@ -12,6 +12,7 @@ const Navbar = () => {
     { label: "Leaderboard", href: "#leaderboard" },
     { label: "About", href: "#about" },
     { label: "Resources", href: "#resources" },
+    { label: "FAQ", href: "#faq" },
   ];
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
