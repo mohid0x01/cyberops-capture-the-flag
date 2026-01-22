@@ -11,13 +11,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-interface Team {
+interface TeamPublic {
   id: string;
   name: string;
   description: string | null;
-  invite_code: string;
+  avatar_url: string | null;
   captain_id: string | null;
   total_points: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface MyTeam extends TeamPublic {
+  invite_code: string;
 }
 
 interface TeamMember {
@@ -29,8 +35,8 @@ interface TeamMember {
 
 const Teams = () => {
   const { profile, user, refreshProfile } = useAuth();
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [myTeam, setMyTeam] = useState<Team | null>(null);
+  const [teams, setTeams] = useState<TeamPublic[]>([]);
+  const [myTeam, setMyTeam] = useState<MyTeam | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
@@ -40,26 +46,39 @@ const Teams = () => {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
 
   const fetchTeams = async () => {
+    // Use the public view that excludes invite_code for the leaderboard
     const { data } = await supabase
-      .from("teams")
+      .from("teams_public")
       .select("*")
       .order("total_points", { ascending: false });
 
-    if (data) setTeams(data);
+    if (data) setTeams(data as TeamPublic[]);
 
     if (profile?.team_id) {
-      const team = data?.find((t) => t.id === profile.team_id);
-      setMyTeam(team || null);
+      // For my team, get basic info from public view first
+      const publicTeam = data?.find((t) => t.id === profile.team_id);
+      
+      if (publicTeam) {
+        // Fetch invite code securely using the SECURITY DEFINER function
+        const { data: inviteCode } = await supabase
+          .rpc('get_my_team_invite_code', { _team_id: profile.team_id });
 
-      // Fetch team members
-      if (team) {
+        setMyTeam({
+          ...publicTeam,
+          invite_code: inviteCode || ''
+        } as MyTeam);
+
+        // Fetch team members
         const { data: members } = await supabase
           .from("profiles")
           .select("id, username, total_points, challenges_solved")
-          .eq("team_id", team.id)
+          .eq("team_id", publicTeam.id)
           .order("total_points", { ascending: false });
 
         if (members) setTeamMembers(members);
+      } else {
+        setMyTeam(null);
+        setTeamMembers([]);
       }
     } else {
       setMyTeam(null);
@@ -103,19 +122,18 @@ const Teams = () => {
   const joinTeam = async () => {
     if (!profile || !joinCode.trim()) return;
 
-    const { data: team } = await supabase
-      .from("teams")
-      .select("id, name")
-      .eq("invite_code", joinCode.trim())
-      .maybeSingle();
+    // Use the secure function to validate the invite code
+    const { data: teamData, error } = await supabase
+      .rpc('validate_team_invite_code', { _code: joinCode.trim() });
 
-    if (!team) {
+    if (error || !teamData || teamData.length === 0) {
       toast.error("Invalid invite code");
       return;
     }
 
-    await supabase.from("profiles").update({ team_id: team.id }).eq("id", profile.id);
-    toast.success(`Joined ${team.name}!`);
+    const team = teamData[0];
+    await supabase.from("profiles").update({ team_id: team.team_id }).eq("id", profile.id);
+    toast.success(`Joined ${team.team_name}!`);
     await refreshProfile();
     fetchTeams();
     setJoinCode("");
