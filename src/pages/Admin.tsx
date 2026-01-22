@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit, Award, Image, Mail, MessageSquare } from "lucide-react";
+import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit, Award, Image, Mail, MessageSquare, ShieldAlert } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,24 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ChallengeFileUpload from "@/components/ChallengeFileUpload";
+import AuditLogViewer from "@/components/AuditLogViewer";
+import AdminSecurityNotifications from "@/components/AdminSecurityNotifications";
 
 interface Writeup {
   id: string;
@@ -76,6 +88,7 @@ const Admin = () => {
   const [competitionSettings, setCompetitionSettings] = useState<CompetitionSettings | null>(null);
   const [editingChallenge, setEditingChallenge] = useState<any | null>(null);
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
+  const [promotingUserId, setPromotingUserId] = useState<string | null>(null);
   const [newChallenge, setNewChallenge] = useState({
     title: "",
     description: "",
@@ -214,13 +227,18 @@ const Admin = () => {
     fetchData();
   };
 
-  const makeAdmin = async (userId: string) => {
-    const { error } = await supabase.from("user_roles").upsert({ user_id: userId, role: "admin" as any });
+  const confirmMakeAdmin = async () => {
+    if (!promotingUserId) return;
+    
+    const { error } = await supabase.from("user_roles").upsert({ user_id: promotingUserId, role: "admin" as any });
     if (error) {
       toast.error(error.message);
+      setPromotingUserId(null);
       return;
     }
     toast.success("User promoted to admin!");
+    setPromotingUserId(null);
+    fetchData();
   };
 
   const updateCompetitionSettings = async (updates: Partial<CompetitionSettings>) => {
@@ -350,6 +368,7 @@ const Admin = () => {
 
   return (
     <DashboardLayout>
+      <AdminSecurityNotifications />
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">Admin Panel</h1>
@@ -382,6 +401,9 @@ const Admin = () => {
                   {unresolvedContacts.length}
                 </span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="audit-logs">
+              <ShieldAlert className="mr-2 h-4 w-4" />Audit Logs
             </TabsTrigger>
           </TabsList>
 
@@ -563,7 +585,7 @@ const Admin = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-display font-bold text-primary">{u.total_points} pts</span>
-                        <Button variant="ghost" size="sm" onClick={() => makeAdmin(u.user_id)} title="Make admin">
+                        <Button variant="ghost" size="sm" onClick={() => setPromotingUserId(u.user_id)} title="Make admin">
                           <ShieldCheck className="h-4 w-4 text-neon-cyan" />
                         </Button>
                       </div>
@@ -1060,7 +1082,33 @@ const Admin = () => {
               )}
             </div>
           </TabsContent>
+
+          {/* Audit Logs Tab */}
+          <TabsContent value="audit-logs">
+            <AuditLogViewer />
+          </TabsContent>
         </Tabs>
+
+        {/* Admin Promotion Confirmation Dialog */}
+        <AlertDialog open={!!promotingUserId} onOpenChange={(open) => !open && setPromotingUserId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-display">Promote to Admin?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will grant <span className="font-semibold text-foreground">{users.find(u => u.user_id === promotingUserId)?.username}</span> full administrative privileges including the ability to manage challenges, users, and settings. This action cannot be easily undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmMakeAdmin}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Confirm Promotion
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

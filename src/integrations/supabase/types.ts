@@ -55,6 +55,39 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          challenge_id: string | null
+          created_at: string | null
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          target_user_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          challenge_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          target_user_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          challenge_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          target_user_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       challenges: {
         Row: {
           author_id: string | null
@@ -309,6 +342,13 @@ export type Database = {
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       sponsors: {
@@ -346,6 +386,48 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      submission_rate_limits: {
+        Row: {
+          attempt_count: number
+          challenge_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          attempt_count?: number
+          challenge_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          attempt_count?: number
+          challenge_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_rate_limits_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_rate_limits_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       submissions: {
         Row: {
@@ -580,8 +662,51 @@ export type Database = {
           },
         ]
       }
+      teams_public: {
+        Row: {
+          avatar_url: string | null
+          captain_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          total_points: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          captain_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          captain_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_captain_id_fkey"
+            columns: ["captain_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      admin_reset_user_scores: { Args: { _username: string }; Returns: Json }
+      get_my_team_invite_code: { Args: { _team_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -589,9 +714,39 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_audit_event: {
+        Args: {
+          _challenge_id?: string
+          _details?: Json
+          _event_type: string
+          _target_user_id?: string
+          _user_id?: string
+        }
+        Returns: undefined
+      }
+      submit_flag: {
+        Args: { _challenge_id: string; _submitted_flag: string }
+        Returns: Json
+      }
+      unlock_hint: {
+        Args: {
+          _challenge_id: string
+          _cost: number
+          _hint_index: number
+          _user_id: string
+        }
+        Returns: Json
+      }
       validate_challenge_flag: {
         Args: { _challenge_id: string; _submitted_flag: string }
         Returns: boolean
+      }
+      validate_team_invite_code: {
+        Args: { _code: string }
+        Returns: {
+          team_id: string
+          team_name: string
+        }[]
       }
     }
     Enums: {

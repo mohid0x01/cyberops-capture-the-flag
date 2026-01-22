@@ -103,24 +103,26 @@ const ChallengeDetail = () => {
 
     const cost = challenge.hint_costs?.[index] || 0;
 
-    if (profile.total_points < cost) {
-      toast.error(`Not enough points! You need ${cost} pts`);
+    // Use atomic database function to prevent race conditions
+    const { data, error } = await supabase.rpc('unlock_hint', {
+      _user_id: user.id,
+      _challenge_id: challenge.id,
+      _hint_index: index,
+      _cost: cost
+    });
+
+    if (error) {
+      toast.error("Failed to unlock hint. Please try again.");
       return;
     }
 
-    // Deduct points
-    await supabase
-      .from("profiles")
-      .update({ total_points: profile.total_points - cost })
-      .eq("user_id", user.id);
+    const result = data as { success: boolean; message: string; cost?: number };
 
-    // Record unlock
-    await supabase.from("hint_unlocks").insert({
-      user_id: user.id,
-      challenge_id: challenge.id,
-      hint_index: index,
-      points_spent: cost,
-    });
+    if (!result.success) {
+      toast.error(result.message);
+      setHintToUnlock(null);
+      return;
+    }
 
     setUnlockedHints((prev) => new Set([...prev, index]));
     setHintToUnlock(null);
@@ -134,69 +136,51 @@ const ChallengeDetail = () => {
 
     setSubmitting(true);
 
-    // Use secure server-side function to validate flag (flag never exposed to client)
-    const { data: validationResult } = await supabase.rpc('validate_challenge_flag', {
+    // Use atomic secure server-side function with rate limiting
+    const { data, error } = await supabase.rpc('submit_flag', {
       _challenge_id: challenge.id,
       _submitted_flag: flag.trim()
     });
 
-    const isCorrect = validationResult === true;
-
-    // Check for first blood
-    let isFirstBlood = false;
-    if (isCorrect) {
-      const { count } = await supabase
-        .from("submissions")
-        .select("*", { count: "exact", head: true })
-        .eq("challenge_id", challenge.id)
-        .eq("is_correct", true);
-
-      isFirstBlood = count === 0;
+    if (error) {
+      toast.error("Failed to submit flag. Please try again.");
+      setSubmitting(false);
+      return;
     }
 
-    // Record submission
-    await supabase.from("submissions").insert({
-      user_id: user.id,
-      challenge_id: challenge.id,
-      submitted_flag: flag,
-      is_correct: isCorrect,
-      points_awarded: isCorrect ? challenge.points : 0,
-      is_first_blood: isFirstBlood,
-    });
+    const result = data as { 
+      success: boolean; 
+      correct?: boolean; 
+      points?: number; 
+      first_blood?: boolean; 
+      message: string;
+      rate_limited?: boolean;
+      retry_after?: number;
+    };
 
-    if (isCorrect) {
-      // Update user profile
-      const { data: currentProfile } = await supabase
-        .from("profiles")
-        .select("total_points, challenges_solved")
-        .eq("user_id", user.id)
-        .single();
-
-      if (currentProfile) {
-        await supabase
-          .from("profiles")
-          .update({
-            total_points: currentProfile.total_points + challenge.points,
-            challenges_solved: currentProfile.challenges_solved + 1,
-          })
-          .eq("user_id", user.id);
+    if (!result.success) {
+      if (result.rate_limited) {
+        const minutes = Math.ceil((result.retry_after || 300) / 60);
+        toast.error(`Too many attempts! Please wait ${minutes} minute(s).`);
+      } else {
+        toast.error(result.message);
       }
+      setSubmitting(false);
+      return;
+    }
 
-      // Update challenge solves
-      await supabase
-        .from("challenges")
-        .update({ solves: challenge.solves + 1 })
-        .eq("id", challenge.id);
-
+    if (result.correct) {
       setIsSolved(true);
       
-      if (isFirstBlood) {
-        toast.success(`🩸 FIRST BLOOD! +${challenge.points} points!`);
+      if (result.first_blood) {
+        toast.success(`🩸 FIRST BLOOD! +${result.points} points!`);
       } else {
-        toast.success(`Correct! +${challenge.points} points`);
+        toast.success(`Correct! +${result.points} points`);
       }
       
       await refreshProfile();
+      // Refetch challenge to update solves count
+      fetchChallenge();
     } else {
       toast.error("Incorrect flag. Try again!");
     }
