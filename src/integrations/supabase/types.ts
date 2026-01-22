@@ -309,6 +309,13 @@ export type Database = {
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       sponsors: {
@@ -580,8 +587,50 @@ export type Database = {
           },
         ]
       }
+      teams_public: {
+        Row: {
+          avatar_url: string | null
+          captain_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          total_points: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          captain_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          captain_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_captain_id_fkey"
+            columns: ["captain_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      get_my_team_invite_code: { Args: { _team_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -592,6 +641,13 @@ export type Database = {
       validate_challenge_flag: {
         Args: { _challenge_id: string; _submitted_flag: string }
         Returns: boolean
+      }
+      validate_team_invite_code: {
+        Args: { _code: string }
+        Returns: {
+          team_id: string
+          team_name: string
+        }[]
       }
     }
     Enums: {
