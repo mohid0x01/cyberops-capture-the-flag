@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { format, subDays, startOfDay, eachDayOfInterval, eachHourOfInterval, subHours } from "date-fns";
+// UPDATED: Added isSameHour and isSameDay
+import { format, subDays, startOfDay, eachDayOfInterval, eachHourOfInterval, subHours, isSameHour, isSameDay } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -120,9 +121,9 @@ const SecurityDashboard = () => {
   });
 
   const submissionTrends = last24Hours.map(hour => {
-    const hourStr = format(hour, "yyyy-MM-dd'T'HH");
+    // FIX: Use isSameHour to compare the Date object from DB with the interval hour
     const hourSubmissions = submissions.filter(s => 
-      s.created_at.startsWith(hourStr)
+      isSameHour(new Date(s.created_at), hour)
     );
     return {
       time: format(hour, "HH:mm"),
@@ -139,8 +140,10 @@ const SecurityDashboard = () => {
   });
 
   const securityTrends = last7Days.map(day => {
-    const dayStr = format(day, "yyyy-MM-dd");
-    const dayLogs = auditLogs.filter(l => l.created_at.startsWith(dayStr));
+    // FIX: Use isSameDay to compare the Date object from DB with the interval day
+    const dayLogs = auditLogs.filter(l => 
+      isSameDay(new Date(l.created_at), day)
+    );
     return {
       date: format(day, "MMM dd"),
       rateLimits: dayLogs.filter(l => l.event_type === "RATE_LIMIT_HIT").length,
@@ -159,9 +162,9 @@ const SecurityDashboard = () => {
 
   // Rate limit trend (hourly)
   const rateLimitTrends = last24Hours.map(hour => {
-    const hourStr = format(hour, "yyyy-MM-dd'T'HH");
+    // FIX: Use isSameHour for rate limit filtering
     const hourLogs = auditLogs.filter(l => 
-      l.event_type === "RATE_LIMIT_HIT" && l.created_at.startsWith(hourStr)
+      l.event_type === "RATE_LIMIT_HIT" && isSameHour(new Date(l.created_at), hour)
     );
     return {
       time: format(hour, "HH:mm"),
