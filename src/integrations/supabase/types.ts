@@ -593,6 +593,165 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_logs: {
+        Row: {
+          available_height: number | null
+          available_width: number | null
+          battery_charging: boolean | null
+          battery_level: number | null
+          browser: string | null
+          browser_version: string | null
+          city: string | null
+          color_depth: number | null
+          connection_type: string | null
+          cookies_enabled: boolean | null
+          country_code: string | null
+          country_name: string | null
+          cpu_cores: number | null
+          created_at: string
+          device_memory: number | null
+          dom_loaded_ms: number | null
+          downlink: number | null
+          entry_url: string | null
+          gpu_renderer: string | null
+          gpu_vendor: string | null
+          id: string
+          ip_address: string | null
+          language: string | null
+          languages: string[] | null
+          latitude: number | null
+          longitude: number | null
+          max_scroll_percent: number | null
+          mouse_moves: number | null
+          nav_type: string | null
+          online: boolean | null
+          orientation: string | null
+          os: string | null
+          page_load_ms: number | null
+          pdf_viewer: boolean | null
+          pixel_ratio: number | null
+          platform: string | null
+          rtt: number | null
+          screen_height: number | null
+          screen_width: number | null
+          scroll_distance: number | null
+          sections_viewed: string[] | null
+          session_id: string
+          time_on_page: number | null
+          timezone: string | null
+          total_clicks: number | null
+          tz_offset: number | null
+          user_agent: string | null
+          user_id: string | null
+          viewport_height: number | null
+          viewport_width: number | null
+        }
+        Insert: {
+          available_height?: number | null
+          available_width?: number | null
+          battery_charging?: boolean | null
+          battery_level?: number | null
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
+          color_depth?: number | null
+          connection_type?: string | null
+          cookies_enabled?: boolean | null
+          country_code?: string | null
+          country_name?: string | null
+          cpu_cores?: number | null
+          created_at?: string
+          device_memory?: number | null
+          dom_loaded_ms?: number | null
+          downlink?: number | null
+          entry_url?: string | null
+          gpu_renderer?: string | null
+          gpu_vendor?: string | null
+          id?: string
+          ip_address?: string | null
+          language?: string | null
+          languages?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          max_scroll_percent?: number | null
+          mouse_moves?: number | null
+          nav_type?: string | null
+          online?: boolean | null
+          orientation?: string | null
+          os?: string | null
+          page_load_ms?: number | null
+          pdf_viewer?: boolean | null
+          pixel_ratio?: number | null
+          platform?: string | null
+          rtt?: number | null
+          screen_height?: number | null
+          screen_width?: number | null
+          scroll_distance?: number | null
+          sections_viewed?: string[] | null
+          session_id: string
+          time_on_page?: number | null
+          timezone?: string | null
+          total_clicks?: number | null
+          tz_offset?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+        }
+        Update: {
+          available_height?: number | null
+          available_width?: number | null
+          battery_charging?: boolean | null
+          battery_level?: number | null
+          browser?: string | null
+          browser_version?: string | null
+          city?: string | null
+          color_depth?: number | null
+          connection_type?: string | null
+          cookies_enabled?: boolean | null
+          country_code?: string | null
+          country_name?: string | null
+          cpu_cores?: number | null
+          created_at?: string
+          device_memory?: number | null
+          dom_loaded_ms?: number | null
+          downlink?: number | null
+          entry_url?: string | null
+          gpu_renderer?: string | null
+          gpu_vendor?: string | null
+          id?: string
+          ip_address?: string | null
+          language?: string | null
+          languages?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
+          max_scroll_percent?: number | null
+          mouse_moves?: number | null
+          nav_type?: string | null
+          online?: boolean | null
+          orientation?: string | null
+          os?: string | null
+          page_load_ms?: number | null
+          pdf_viewer?: boolean | null
+          pixel_ratio?: number | null
+          platform?: string | null
+          rtt?: number | null
+          screen_height?: number | null
+          screen_width?: number | null
+          scroll_distance?: number | null
+          sections_viewed?: string[] | null
+          session_id?: string
+          time_on_page?: number | null
+          timezone?: string | null
+          total_clicks?: number | null
+          tz_offset?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+        }
+        Relationships: []
+      }
       writeups: {
         Row: {
           author_id: string
@@ -762,6 +921,31 @@ export type Database = {
       }
       admin_reset_user_scores: { Args: { _username: string }; Returns: Json }
       admin_unban_user: { Args: { _username: string }; Returns: Json }
+      detect_login_anomalies: {
+        Args: { _user_id: string }
+        Returns: {
+          city: string
+          country_name: string
+          created_at: string
+          ip_address: string
+          is_anomaly: boolean
+          reason: string
+          session_id: string
+        }[]
+      }
+      get_all_login_anomalies: {
+        Args: never
+        Returns: {
+          city: string
+          country_name: string
+          created_at: string
+          ip_address: string
+          reason: string
+          session_id: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_my_team_invite_code: { Args: { _team_id: string }; Returns: string }
       has_role: {
         Args: {
