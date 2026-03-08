@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit, Award, Image, Mail, MessageSquare, ShieldAlert, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Users, Target, FileText, CheckCircle, XCircle, ShieldCheck, Clock, Trophy, Megaphone, Edit, Award, Image, Mail, MessageSquare, ShieldAlert, BarChart3, Eye, Activity, AlertTriangle, Fingerprint } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,9 @@ import ChallengeFileUpload from "@/components/ChallengeFileUpload";
 import AuditLogViewer from "@/components/AuditLogViewer";
 import AdminSecurityNotifications from "@/components/AdminSecurityNotifications";
 import SecurityDashboard from "@/components/SecurityDashboard";
+import VisitorLogViewer from "@/components/VisitorLogViewer";
+import UserActivityTimeline from "@/components/UserActivityTimeline";
+import AnomalyDetection from "@/components/AnomalyDetection";
 
 interface Writeup {
   id: string;
@@ -408,6 +411,15 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="audit-logs">
               <ShieldAlert className="mr-2 h-4 w-4" />Audit Logs
+            </TabsTrigger>
+            <TabsTrigger value="visitors">
+              <Eye className="mr-2 h-4 w-4" />Visitors
+            </TabsTrigger>
+            <TabsTrigger value="investigation">
+              <Activity className="mr-2 h-4 w-4" />Investigation
+            </TabsTrigger>
+            <TabsTrigger value="anomalies">
+              <AlertTriangle className="mr-2 h-4 w-4" />Anomalies
             </TabsTrigger>
           </TabsList>
 
@@ -1095,6 +1107,21 @@ const Admin = () => {
           {/* Audit Logs Tab */}
           <TabsContent value="audit-logs">
             <AuditLogViewer />
+          </TabsContent>
+
+          {/* Visitors Tab */}
+          <TabsContent value="visitors">
+            <VisitorLogViewer />
+          </TabsContent>
+
+          {/* Investigation Tab */}
+          <TabsContent value="investigation">
+            <UserActivityTimeline />
+          </TabsContent>
+
+          {/* Anomalies Tab */}
+          <TabsContent value="anomalies">
+            <AnomalyDetection />
           </TabsContent>
         </Tabs>
 
