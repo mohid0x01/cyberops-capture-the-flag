@@ -1108,6 +1108,21 @@ const Admin = () => {
           <TabsContent value="audit-logs">
             <AuditLogViewer />
           </TabsContent>
+
+          {/* Visitors Tab */}
+          <TabsContent value="visitors">
+            <VisitorLogViewer />
+          </TabsContent>
+
+          {/* Investigation Tab */}
+          <TabsContent value="investigation">
+            <UserActivityTimeline />
+          </TabsContent>
+
+          {/* Anomalies Tab */}
+          <TabsContent value="anomalies">
+            <AnomalyDetection />
+          </TabsContent>
         </Tabs>
 
         {/* Admin Promotion Confirmation Dialog */}
