@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-export const DataOpsModule = () => {
+export const DataOpsModule = ({ onAction }: { onAction?: (action: string) => void }) => {
   const [activeTab, setActiveTab] = useState("export");
   const [exporting, setExporting] = useState(false);
 
@@ -80,10 +80,10 @@ export const DataOpsModule = () => {
         <C2Panel title="DATA EXPORT" icon={Download} color="text-neon-cyan">
           <div className="p-3 space-y-1 max-h-[600px] overflow-y-auto">
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <ActionBtn icon={Download} label="Export All (JSON)" color="primary" />
-              <ActionBtn icon={Download} label="Export All (CSV)" color="secondary" />
-              <ActionBtn icon={FileText} label="Generate Report" color="neon-purple" />
-              <ActionBtn icon={Archive} label="Full Backup" color="neon-orange" />
+              <ActionBtn icon={Download} label="Export All (JSON)" color="primary" onClick={() => onAction?.("Export All (JSON)")} />
+              <ActionBtn icon={Download} label="Export All (CSV)" color="secondary" onClick={() => onAction?.("Export All (CSV)")} />
+              <ActionBtn icon={FileText} label="Generate Report" color="neon-purple" onClick={() => onAction?.("Generate Report")} />
+              <ActionBtn icon={Archive} label="Full Backup" color="neon-orange" onClick={() => onAction?.("Backup DB")} />
             </div>
             <SectionLabel label="Individual Tables" color="neon-cyan" />
             {exportables.map(exp => (
@@ -132,9 +132,9 @@ export const DataOpsModule = () => {
         <C2Panel title="BACKUP MANAGEMENT" icon={Archive} color="text-primary">
           <div className="p-4 space-y-3">
             <div className="grid grid-cols-3 gap-2">
-              <ActionBtn icon={Database} label="Full Backup" color="primary" />
-              <ActionBtn icon={RefreshCw} label="Restore Latest" color="neon-orange" />
-              <ActionBtn icon={Clock} label="Schedule" color="secondary" />
+              <ActionBtn icon={Database} label="Full Backup" color="primary" onClick={() => onAction?.("Backup DB")} />
+              <ActionBtn icon={RefreshCw} label="Restore Latest" color="neon-orange" onClick={() => onAction?.("Restore Latest")} />
+              <ActionBtn icon={Clock} label="Schedule" color="secondary" onClick={() => onAction?.("Schedule")} />
             </div>
             <SectionLabel label="Backup History" color="primary" />
             {[
@@ -202,8 +202,8 @@ export const DataOpsModule = () => {
         <C2Panel title="DATABASE MIGRATIONS" icon={Layers} color="text-neon-purple">
           <div className="p-4 space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <ActionBtn icon={Layers} label="Run Pending" color="primary" />
-              <ActionBtn icon={RefreshCw} label="Rollback Last" color="neon-orange" />
+              <ActionBtn icon={Layers} label="Run Pending" color="primary" onClick={() => onAction?.("Run Pending")} />
+              <ActionBtn icon={RefreshCw} label="Rollback Last" color="neon-orange" onClick={() => onAction?.("Rollback Last")} />
             </div>
             <SectionLabel label="Migration History" color="neon-purple" />
             {[

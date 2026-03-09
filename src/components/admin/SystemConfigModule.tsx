@@ -8,7 +8,7 @@ import {
 import { C2Panel, ConfigToggle, ConfigInput, SectionLabel, ActionBtn } from "./C2Shared";
 import { Switch } from "@/components/ui/switch";
 
-export const SystemConfigModule = () => {
+export const SystemConfigModule = ({ onAction }: { onAction?: (action: string) => void }) => {
   const [config, setConfig] = useState({
     // General
     siteName: "CyberOps CTF",
@@ -356,8 +356,8 @@ export const SystemConfigModule = () => {
           <ConfigInput label="Backup Retention (days)" desc="Keep backups for N days" value={config.backupRetention} onChange={v => setVal("backupRetention", v)} type="number" />
           <ConfigToggle label="Backup Encryption" desc="Encrypt backup files" checked={config.backupEncryption} onChange={() => toggle("backupEncryption")} />
           <div className="grid grid-cols-2 gap-2 pt-2">
-            <ActionBtn icon={Database} label="Backup Now" color="primary" />
-            <ActionBtn icon={RefreshCw} label="Restore" color="neon-orange" />
+            <ActionBtn icon={Database} label="Backup Now" color="primary" onClick={() => onAction?.("Backup DB")} />
+            <ActionBtn icon={RefreshCw} label="Restore" color="neon-orange" onClick={() => onAction?.("Restore")} />
           </div>
         </div>
       </C2Panel>
@@ -371,10 +371,10 @@ export const SystemConfigModule = () => {
           <ConfigToggle label="Analytics" desc="Third-party analytics" checked={config.enableAnalytics} onChange={() => toggle("enableAnalytics")} />
           {config.enableAnalytics && <ConfigInput label="Analytics ID" desc="Tracking code" value={config.analyticsId} onChange={v => setVal("analyticsId", v)} />}
           <div className="grid grid-cols-2 gap-2 pt-2">
-            <ActionBtn icon={RefreshCw} label="Clear Cache" color="neon-orange" />
-            <ActionBtn icon={Database} label="Reset DB" color="destructive" />
-            <ActionBtn icon={Power} label="Restart" color="destructive" />
-            <ActionBtn icon={Terminal} label="Console" color="neon-cyan" />
+            <ActionBtn icon={RefreshCw} label="Clear Cache" color="neon-orange" onClick={() => onAction?.("Purge Cache")} />
+            <ActionBtn icon={Database} label="Reset DB" color="destructive" onClick={() => onAction?.("Reset DB")} />
+            <ActionBtn icon={Power} label="Restart" color="destructive" onClick={() => onAction?.("Restart Services")} />
+            <ActionBtn icon={Terminal} label="Console" color="neon-cyan" onClick={() => onAction?.("SQL Console")} />
           </div>
         </div>
       </C2Panel>
