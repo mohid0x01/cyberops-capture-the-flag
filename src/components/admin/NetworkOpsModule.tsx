@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-export const NetworkOpsModule = () => {
+export const NetworkOpsModule = ({ onAction }: { onAction?: (action: string) => void }) => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [searchIp, setSearchIp] = useState("");
   const [blacklist, setBlacklist] = useState<string[]>([]);
@@ -121,8 +121,8 @@ export const NetworkOpsModule = () => {
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2 pt-2">
-              <ActionBtn icon={Download} label="Export List" color="secondary" />
-              <ActionBtn icon={RefreshCw} label="Import List" color="neon-cyan" />
+              <ActionBtn icon={Download} label="Export List" color="secondary" onClick={() => onAction?.("Export Logs")} />
+              <ActionBtn icon={RefreshCw} label="Import List" color="neon-cyan" onClick={() => onAction?.("Import Data")} />
             </div>
           </div>
         </C2Panel>
