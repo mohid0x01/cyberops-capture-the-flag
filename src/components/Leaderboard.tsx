@@ -12,9 +12,9 @@ interface Player {
 
 const getRankStyle = (rank: number) => {
   switch (rank) {
-    case 1: return { icon: <Crown className="h-5 w-5 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.5)]" />, bg: "bg-yellow-400/5 border-yellow-400/20" };
-    case 2: return { icon: <Medal className="h-5 w-5 text-gray-300 drop-shadow-[0_0_4px_rgba(209,213,219,0.4)]" />, bg: "bg-gray-300/5 border-gray-300/10" };
-    case 3: return { icon: <Award className="h-5 w-5 text-amber-600 drop-shadow-[0_0_4px_rgba(217,119,6,0.4)]" />, bg: "bg-amber-600/5 border-amber-600/10" };
+    case 1: return { icon: <Crown className="h-5 w-5 text-neon-orange" style={{ filter: 'drop-shadow(0 0 6px hsl(var(--neon-orange) / 0.5))' }} />, bg: "bg-neon-orange/5 border-neon-orange/20" };
+    case 2: return { icon: <Medal className="h-5 w-5 text-muted-foreground" style={{ filter: 'drop-shadow(0 0 4px hsl(var(--muted-foreground) / 0.4))' }} />, bg: "bg-muted/5 border-muted/10" };
+    case 3: return { icon: <Award className="h-5 w-5 text-neon-orange" style={{ filter: 'drop-shadow(0 0 4px hsl(var(--neon-orange) / 0.4))' }} />, bg: "bg-neon-orange/5 border-neon-orange/10" };
     default: return { icon: <span className="text-muted-foreground font-mono text-sm">#{rank}</span>, bg: "border-border/30" };
   }
 };
