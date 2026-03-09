@@ -373,10 +373,17 @@ const Admin = () => {
   return (
     <DashboardLayout>
       <AdminSecurityNotifications />
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Admin Panel</h1>
-          <p className="text-muted-foreground font-mono text-sm">Manage the CTF platform</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-display text-3xl font-black text-foreground tracking-tight">Admin Panel</h1>
+              <p className="text-muted-foreground font-mono text-xs tracking-wider">SYSTEM MANAGEMENT CONSOLE</p>
+            </div>
+          </div>
         </motion.div>
 
         <Tabs defaultValue="challenges">
@@ -392,7 +399,7 @@ const Admin = () => {
             <TabsTrigger value="writeups" className="relative">
               <FileText className="mr-2 h-4 w-4" />Writeups
               {pendingWriteups.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded-full">
+                <span className="ml-2 px-2 py-0.5 text-xs bg-neon-orange/20 text-neon-orange rounded-full">
                   {pendingWriteups.length}
                 </span>
               )}
@@ -401,7 +408,7 @@ const Admin = () => {
             <TabsTrigger value="contacts" className="relative">
               <Mail className="mr-2 h-4 w-4" />Contacts
               {unresolvedContacts.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded-full">
+                <span className="ml-2 px-2 py-0.5 text-xs bg-secondary/20 text-secondary rounded-full">
                   {unresolvedContacts.length}
                 </span>
               )}
@@ -545,13 +552,13 @@ const Admin = () => {
                 </DialogContent>
               </Dialog>
             </div>
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="glass-card rounded-xl overflow-hidden">
               {challenges.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground font-mono">No challenges yet</div>
               ) : (
-                <div className="divide-y divide-border">
+                <div className="divide-y divide-border/20">
                   {challenges.map((c) => (
-                    <div key={c.id} className="px-6 py-4 flex items-center justify-between">
+                    <div key={c.id} className="px-6 py-4 flex items-center justify-between hover:bg-primary/3 transition-colors">
                       <div>
                         <div className="font-mono font-semibold flex items-center gap-2">
                           {c.title}
@@ -583,7 +590,7 @@ const Admin = () => {
           {/* Users Tab */}
           <TabsContent value="users">
             <h2 className="font-display text-xl font-bold mb-4">All Users ({users.length})</h2>
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="glass-card rounded-xl overflow-hidden">
               {users.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground font-mono">No users yet</div>
               ) : (
