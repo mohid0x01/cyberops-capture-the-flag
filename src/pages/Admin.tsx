@@ -90,11 +90,43 @@ const Admin = () => {
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [promotingUserId, setPromotingUserId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [sessions, setSessions] = useState(0);
   const [visitors, setVisitors] = useState(0);
   const [teams, setTeams] = useState(0);
   const [firstBloods, setFirstBloods] = useState(0);
   const [auditThreats, setAuditThreats] = useState(0);
+
+  // ─── Keyboard Shortcuts ─────────────────────────────────────────────────
+  useEffect(() => {
+    const moduleKeys = ["overview", "challenges", "users", "announcements", "sponsors", "writeups", "competition", "contacts", "terminal"];
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K: Command Palette
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+        return;
+      }
+      // Escape: collapse sidebar or close palette
+      if (e.key === "Escape") {
+        if (commandPaletteOpen) {
+          setCommandPaletteOpen(false);
+        } else {
+          setSidebarCollapsed(prev => !prev);
+        }
+        return;
+      }
+      // Ctrl+1-9: switch modules
+      if ((e.metaKey || e.ctrlKey) && e.key >= "1" && e.key <= "9") {
+        e.preventDefault();
+        const idx = parseInt(e.key) - 1;
+        if (idx < moduleKeys.length) setActiveModule(moduleKeys[idx]);
+        return;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [commandPaletteOpen]);
 
   const [newChallenge, setNewChallenge] = useState({
     title: "", description: "", category: "web", difficulty: "easy", points: 100, flag: "", hints: "", hint_costs: "", files: [] as string[],
