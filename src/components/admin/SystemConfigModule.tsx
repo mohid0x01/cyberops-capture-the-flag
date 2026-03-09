@@ -356,8 +356,8 @@ export const SystemConfigModule = ({ onAction }: { onAction?: (action: string) =
           <ConfigInput label="Backup Retention (days)" desc="Keep backups for N days" value={config.backupRetention} onChange={v => setVal("backupRetention", v)} type="number" />
           <ConfigToggle label="Backup Encryption" desc="Encrypt backup files" checked={config.backupEncryption} onChange={() => toggle("backupEncryption")} />
           <div className="grid grid-cols-2 gap-2 pt-2">
-            <ActionBtn icon={Database} label="Backup Now" color="primary" />
-            <ActionBtn icon={RefreshCw} label="Restore" color="neon-orange" />
+            <ActionBtn icon={Database} label="Backup Now" color="primary" onClick={() => onAction?.("Backup DB")} />
+            <ActionBtn icon={RefreshCw} label="Restore" color="neon-orange" onClick={() => onAction?.("Restore")} />
           </div>
         </div>
       </C2Panel>
