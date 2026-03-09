@@ -80,10 +80,10 @@ export const DataOpsModule = ({ onAction }: { onAction?: (action: string) => voi
         <C2Panel title="DATA EXPORT" icon={Download} color="text-neon-cyan">
           <div className="p-3 space-y-1 max-h-[600px] overflow-y-auto">
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <ActionBtn icon={Download} label="Export All (JSON)" color="primary" />
-              <ActionBtn icon={Download} label="Export All (CSV)" color="secondary" />
-              <ActionBtn icon={FileText} label="Generate Report" color="neon-purple" />
-              <ActionBtn icon={Archive} label="Full Backup" color="neon-orange" />
+              <ActionBtn icon={Download} label="Export All (JSON)" color="primary" onClick={() => onAction?.("Export All (JSON)")} />
+              <ActionBtn icon={Download} label="Export All (CSV)" color="secondary" onClick={() => onAction?.("Export All (CSV)")} />
+              <ActionBtn icon={FileText} label="Generate Report" color="neon-purple" onClick={() => onAction?.("Generate Report")} />
+              <ActionBtn icon={Archive} label="Full Backup" color="neon-orange" onClick={() => onAction?.("Backup DB")} />
             </div>
             <SectionLabel label="Individual Tables" color="neon-cyan" />
             {exportables.map(exp => (
