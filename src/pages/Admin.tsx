@@ -373,10 +373,17 @@ const Admin = () => {
   return (
     <DashboardLayout>
       <AdminSecurityNotifications />
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Admin Panel</h1>
-          <p className="text-muted-foreground font-mono text-sm">Manage the CTF platform</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-display text-3xl font-black text-foreground tracking-tight">Admin Panel</h1>
+              <p className="text-muted-foreground font-mono text-xs tracking-wider">SYSTEM MANAGEMENT CONSOLE</p>
+            </div>
+          </div>
         </motion.div>
 
         <Tabs defaultValue="challenges">
