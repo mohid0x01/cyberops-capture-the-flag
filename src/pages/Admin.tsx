@@ -399,7 +399,7 @@ const Admin = () => {
             <TabsTrigger value="writeups" className="relative">
               <FileText className="mr-2 h-4 w-4" />Writeups
               {pendingWriteups.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded-full">
+                <span className="ml-2 px-2 py-0.5 text-xs bg-neon-orange/20 text-neon-orange rounded-full">
                   {pendingWriteups.length}
                 </span>
               )}
@@ -408,7 +408,7 @@ const Admin = () => {
             <TabsTrigger value="contacts" className="relative">
               <Mail className="mr-2 h-4 w-4" />Contacts
               {unresolvedContacts.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded-full">
+                <span className="ml-2 px-2 py-0.5 text-xs bg-secondary/20 text-secondary rounded-full">
                   {unresolvedContacts.length}
                 </span>
               )}
