@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Sponsor {
@@ -13,26 +13,10 @@ interface Sponsor {
 }
 
 const tierConfig = {
-  platinum: {
-    label: "Platinum Sponsors",
-    size: "w-48 h-24",
-    glow: "hover:shadow-[0_0_30px_rgba(0,255,170,0.3)]",
-  },
-  gold: {
-    label: "Gold Sponsors",
-    size: "w-40 h-20",
-    glow: "hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]",
-  },
-  silver: {
-    label: "Silver Sponsors",
-    size: "w-32 h-16",
-    glow: "hover:shadow-[0_0_15px_rgba(192,192,192,0.3)]",
-  },
-  bronze: {
-    label: "Bronze Sponsors",
-    size: "w-28 h-14",
-    glow: "hover:shadow-[0_0_10px_rgba(205,127,50,0.3)]",
-  },
+  platinum: { label: "Platinum Sponsors", size: "w-48 h-24", glow: "hover:shadow-[0_0_30px_hsl(var(--neon-green)/0.2)]" },
+  gold: { label: "Gold Sponsors", size: "w-40 h-20", glow: "hover:shadow-[0_0_20px_hsl(var(--neon-orange)/0.2)]" },
+  silver: { label: "Silver Sponsors", size: "w-32 h-16", glow: "hover:shadow-[0_0_15px_hsl(var(--neon-cyan)/0.2)]" },
+  bronze: { label: "Bronze Sponsors", size: "w-28 h-14", glow: "hover:shadow-[0_0_10px_hsl(var(--neon-purple)/0.2)]" },
 };
 
 const Sponsors = () => {
@@ -41,64 +25,36 @@ const Sponsors = () => {
 
   useEffect(() => {
     const fetchSponsors = async () => {
-      const { data } = await supabase
-        .from("sponsors")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order", { ascending: true });
-
-      if (data) {
-        setSponsors(data as Sponsor[]);
-      }
+      const { data } = await supabase.from("sponsors").select("*").eq("is_active", true).order("display_order", { ascending: true });
+      if (data) setSponsors(data as Sponsor[]);
       setLoading(false);
     };
-
     fetchSponsors();
   }, []);
 
-  const groupedSponsors = sponsors.reduce((acc, sponsor) => {
-    if (!acc[sponsor.tier]) {
-      acc[sponsor.tier] = [];
-    }
-    acc[sponsor.tier].push(sponsor);
-    return acc;
-  }, {} as Record<string, Sponsor[]>);
-
-  const tierOrder: Array<"platinum" | "gold" | "silver" | "bronze"> = [
-    "platinum",
-    "gold",
-    "silver",
-    "bronze",
-  ];
-
+  const groupedSponsors = sponsors.reduce((acc, s) => { (acc[s.tier] = acc[s.tier] || []).push(s); return acc; }, {} as Record<string, Sponsor[]>);
+  const tierOrder: Array<"platinum" | "gold" | "silver" | "bronze"> = ["platinum", "gold", "silver", "bronze"];
   const hasSponsors = sponsors.length > 0;
 
   return (
-    <section className="py-20 bg-card/30 relative overflow-hidden">
-      {/* Background elements */}
+    <section className="py-28 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-secondary/20 to-transparent" />
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-neon-cyan/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-0 w-[300px] h-[300px] bg-primary/3 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] bg-secondary/3 rounded-full blur-[100px]" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card/50 backdrop-blur-sm mb-4">
-            <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-              Our Partners
-            </span>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass text-xs font-mono uppercase tracking-[0.2em] text-secondary mb-6">
+            <Handshake className="w-3.5 h-3.5" />
+            Our Partners
           </span>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-display text-4xl md:text-6xl font-black text-foreground mb-5 tracking-tight">
             Powered by <span className="text-gradient">Industry Leaders</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            CyberOps is made possible by the generous support of our sponsors who share our passion for cybersecurity education.
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            CyberOps is made possible by the generous support of our sponsors.
           </p>
         </motion.div>
 
@@ -111,25 +67,15 @@ const Sponsors = () => {
           </div>
         ) : hasSponsors ? (
           <div className="space-y-12">
-            {tierOrder.map((tier) => {
+            {tierOrder.map(tier => {
               const tierSponsors = groupedSponsors[tier];
-              if (!tierSponsors || tierSponsors.length === 0) return null;
-
+              if (!tierSponsors?.length) return null;
               const config = tierConfig[tier];
-
               return (
-                <motion.div
-                  key={tier}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="text-center"
-                >
-                  <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-6">
-                    {config.label}
-                  </h3>
-                  <div className="flex flex-wrap justify-center items-center gap-6">
-                    {tierSponsors.map((sponsor, index) => (
+                <div key={tier} className="text-center">
+                  <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-6">{config.label}</h3>
+                  <div className="flex flex-wrap justify-center items-center gap-5">
+                    {tierSponsors.map((sponsor, i) => (
                       <motion.a
                         key={sponsor.id}
                         href={sponsor.website_url || "#"}
@@ -138,15 +84,11 @@ const Sponsors = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.05 }}
-                        className={`relative group ${config.size} rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300 ${config.glow} flex items-center justify-center p-2`}
+                        transition={{ delay: i * 0.1 }}
+                        whileHover={{ scale: 1.05, y: -4 }}
+                        className={`relative group ${config.size} rounded-xl glass-card overflow-hidden transition-all duration-300 ${config.glow} flex items-center justify-center p-3`}
                       >
-                        <img
-                          src={sponsor.logo_url}
-                          alt={sponsor.name}
-                          className="max-w-full max-h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity"
-                        />
+                        <img src={sponsor.logo_url} alt={sponsor.name} className="max-w-full max-h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
                           <span className="text-xs font-mono text-foreground flex items-center gap-1">
                             {sponsor.name}
@@ -156,30 +98,20 @@ const Sponsors = () => {
                       </motion.a>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground font-mono text-sm">
-              Sponsor spots available! Get in touch to support CyberOps.
-            </p>
+            <p className="text-muted-foreground font-mono text-sm">Sponsor spots available! Get in touch to support CyberOps.</p>
           </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center mt-12 pt-8 border-t border-border"
-        >
-          <p className="text-sm text-muted-foreground mb-4">
-            Interested in sponsoring CyberOps?
-          </p>
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-16">
           <a
             href="mailto:sponsors@cyberops.io"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-primary/30 bg-primary/10 text-primary font-mono text-sm hover:bg-primary/20 transition-colors"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl glass border-primary/20 text-primary font-mono text-sm hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--neon-green)/0.15)]"
           >
             Become a Sponsor
             <ExternalLink className="h-4 w-4" />
