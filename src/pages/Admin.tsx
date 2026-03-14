@@ -43,6 +43,7 @@ import { PerformanceModule } from "@/components/admin/PerformanceModule";
 import { UserManagementModule } from "@/components/admin/UserManagementModule";
 import { TerminalModule } from "@/components/admin/TerminalModule";
 import { CommandPalette } from "@/components/admin/CommandPalette";
+import { SiteSettingsModule } from "@/components/admin/SiteSettingsModule";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Writeup { id: string; title: string; content: string; is_approved: boolean; created_at: string; challenges: { title: string } | null; profiles: { username: string } | null; }
