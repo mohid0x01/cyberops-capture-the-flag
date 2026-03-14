@@ -526,9 +526,13 @@ const Admin = () => {
                               {c.title}
                               {c.files?.length > 0 && <Badge variant="outline" className="text-[9px] py-0 px-1 border-primary/20 text-primary">{c.files.length} files</Badge>}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5 flex items-center gap-2">
+                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5 flex items-center gap-2 flex-wrap">
                               <span className={`uppercase ${c.difficulty === "insane" ? "text-destructive" : c.difficulty === "hard" ? "text-neon-orange" : c.difficulty === "medium" ? "text-secondary" : "text-primary"}`}>{c.difficulty}</span>
                               <span>•</span><span>{c.category}</span><span>•</span><span>{c.points} pts</span><span>•</span><span>{c.solves} solves</span>
+                            </div>
+                            <div className="text-[10px] font-mono mt-0.5 flex items-center gap-1.5">
+                              <Key className="w-3 h-3 text-neon-orange" />
+                              <span className="text-neon-orange/70 select-all">{c.flag}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
