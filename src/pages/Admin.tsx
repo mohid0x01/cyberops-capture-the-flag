@@ -7,7 +7,7 @@ import {
   Terminal, Cpu, Wifi, Zap, Radio, Database, Server, Lock,
   RefreshCw, Maximize2, Minimize2, Radar, ChevronRight, Shield,
   Search, Globe, Bug, Skull, Layers, Download, Upload, Settings,
-  Gauge, Network, HardDrive, Power, Hash, Bell, Palette, Ban, Code
+  Gauge, Network, HardDrive, Power, Hash, Bell, Palette, Ban, Code, Key
 } from "lucide-react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ import { PerformanceModule } from "@/components/admin/PerformanceModule";
 import { UserManagementModule } from "@/components/admin/UserManagementModule";
 import { TerminalModule } from "@/components/admin/TerminalModule";
 import { CommandPalette } from "@/components/admin/CommandPalette";
+import { SiteSettingsModule } from "@/components/admin/SiteSettingsModule";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Writeup { id: string; title: string; content: string; is_approved: boolean; created_at: string; challenges: { title: string } | null; profiles: { username: string } | null; }
@@ -56,6 +57,7 @@ const C2_MODULES = [
   { id: "overview", label: "OVERVIEW", icon: Radar, color: "text-primary", group: "command" },
   { id: "challenges", label: "CHALLENGES", icon: Target, color: "text-primary", group: "command" },
   { id: "users", label: "OPERATORS", icon: Users, color: "text-secondary", group: "command" },
+  { id: "site-settings", label: "SITE CTRL", icon: Settings, color: "text-neon-purple", group: "command" },
   { id: "announcements", label: "BROADCAST", icon: Radio, color: "text-neon-orange", group: "command" },
   { id: "sponsors", label: "ASSETS", icon: Award, color: "text-neon-cyan", group: "command" },
   { id: "writeups", label: "INTEL", icon: FileText, color: "text-neon-purple", group: "intel" },
@@ -467,6 +469,7 @@ const Admin = () => {
                 {activeModule === "data-ops" && <DataOpsModule onAction={handleQuickAction} />}
                 {activeModule === "performance" && <PerformanceModule onAction={handleQuickAction} />}
                 {activeModule === "terminal" && <TerminalModule />}
+                {activeModule === "site-settings" && <SiteSettingsModule />}
 
                 {activeModule === "challenges" && (
                   <C2Panel title="CHALLENGE TARGETS" icon={Target} color="text-primary" actions={
@@ -523,9 +526,13 @@ const Admin = () => {
                               {c.title}
                               {c.files?.length > 0 && <Badge variant="outline" className="text-[9px] py-0 px-1 border-primary/20 text-primary">{c.files.length} files</Badge>}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5 flex items-center gap-2">
+                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5 flex items-center gap-2 flex-wrap">
                               <span className={`uppercase ${c.difficulty === "insane" ? "text-destructive" : c.difficulty === "hard" ? "text-neon-orange" : c.difficulty === "medium" ? "text-secondary" : "text-primary"}`}>{c.difficulty}</span>
                               <span>•</span><span>{c.category}</span><span>•</span><span>{c.points} pts</span><span>•</span><span>{c.solves} solves</span>
+                            </div>
+                            <div className="text-[10px] font-mono mt-0.5 flex items-center gap-1.5">
+                              <Key className="w-3 h-3 text-neon-orange" />
+                              <span className="text-neon-orange/70 select-all">{c.flag}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
