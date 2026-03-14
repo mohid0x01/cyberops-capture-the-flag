@@ -57,6 +57,7 @@ const C2_MODULES = [
   { id: "overview", label: "OVERVIEW", icon: Radar, color: "text-primary", group: "command" },
   { id: "challenges", label: "CHALLENGES", icon: Target, color: "text-primary", group: "command" },
   { id: "users", label: "OPERATORS", icon: Users, color: "text-secondary", group: "command" },
+  { id: "site-settings", label: "SITE CTRL", icon: Settings, color: "text-neon-purple", group: "command" },
   { id: "announcements", label: "BROADCAST", icon: Radio, color: "text-neon-orange", group: "command" },
   { id: "sponsors", label: "ASSETS", icon: Award, color: "text-neon-cyan", group: "command" },
   { id: "writeups", label: "INTEL", icon: FileText, color: "text-neon-purple", group: "intel" },
