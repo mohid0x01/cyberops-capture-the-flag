@@ -140,11 +140,13 @@ const Navbar = () => {
                       Login
                     </Link>
                   </Button>
-                  <Button variant="hero" size="sm" asChild>
-                    <Link to="/signup" onClick={() => setIsOpen(false)}>
-                      Join CTF
-                    </Link>
-                  </Button>
+                  {toggles.registration && (
+                    <Button variant="hero" size="sm" asChild>
+                      <Link to="/signup" onClick={() => setIsOpen(false)}>
+                        Join CTF
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </motion.div>
