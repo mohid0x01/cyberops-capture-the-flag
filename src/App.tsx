@@ -3,9 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CompetitionProvider } from "@/contexts/CompetitionContext";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LiveNotifications from "@/components/LiveNotifications";
 import Index from "./pages/Index";
@@ -26,6 +27,7 @@ import Terms from "./pages/Terms";
 import Rules from "./pages/Rules";
 import Conduct from "./pages/Conduct";
 import NotFound from "./pages/NotFound";
+import Maintenance from "./pages/Maintenance";
 
 const queryClient = new QueryClient();
 
@@ -49,20 +51,38 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => (
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { isAdmin } = useAuth();
+  const { settings, loading } = useSiteSettings();
+
+  const maintenanceOn = settings.maintenance_mode.enabled && !isAdmin;
+  const toggles = settings.feature_toggles;
+
+  // Show maintenance page for non-admin users when enabled
+  if (!loading && maintenanceOn && !["/login", "/admin"].includes(location.pathname)) {
+    return <Maintenance message={settings.maintenance_mode.message} />;
+  }
 
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><Index /></PageTransition>} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-        <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+        {toggles.registration && (
+          <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+        )}
         <Route path="/dashboard" element={<PageTransition><ProtectedRoute><Dashboard /><LiveNotifications /></ProtectedRoute></PageTransition>} />
         <Route path="/challenges" element={<PageTransition><ProtectedRoute><Challenges /><LiveNotifications /></ProtectedRoute></PageTransition>} />
         <Route path="/challenges/:id" element={<PageTransition><ProtectedRoute><ChallengeDetail /><LiveNotifications /></ProtectedRoute></PageTransition>} />
         <Route path="/categories" element={<PageTransition><ProtectedRoute><Categories /><LiveNotifications /></ProtectedRoute></PageTransition>} />
-        <Route path="/leaderboard" element={<PageTransition><ProtectedRoute><LeaderboardPage /><LiveNotifications /></ProtectedRoute></PageTransition>} />
-        <Route path="/teams" element={<PageTransition><ProtectedRoute><Teams /><LiveNotifications /></ProtectedRoute></PageTransition>} />
-        <Route path="/writeups" element={<PageTransition><ProtectedRoute><Writeups /><LiveNotifications /></ProtectedRoute></PageTransition>} />
+        {toggles.leaderboard && (
+          <Route path="/leaderboard" element={<PageTransition><ProtectedRoute><LeaderboardPage /><LiveNotifications /></ProtectedRoute></PageTransition>} />
+        )}
+        {toggles.teams && (
+          <Route path="/teams" element={<PageTransition><ProtectedRoute><Teams /><LiveNotifications /></ProtectedRoute></PageTransition>} />
+        )}
+        {toggles.writeups && (
+          <Route path="/writeups" element={<PageTransition><ProtectedRoute><Writeups /><LiveNotifications /></ProtectedRoute></PageTransition>} />
+        )}
         <Route path="/settings" element={<PageTransition><ProtectedRoute><Settings /></ProtectedRoute></PageTransition>} />
         <Route path="/profile" element={<PageTransition><ProtectedRoute><Profile /><LiveNotifications /></ProtectedRoute></PageTransition>} />
         <Route path="/profile/:userId" element={<PageTransition><ProtectedRoute><Profile /><LiveNotifications /></ProtectedRoute></PageTransition>} />

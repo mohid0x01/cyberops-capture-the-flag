@@ -338,7 +338,7 @@ const SecurityDashboard = () => {
             <CardContent>
               <div className="h-[250px] w-full flex items-center justify-center">
                 {eventDistribution.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ChartContainer config={chartConfig} className="h-[250px] w-full">
                     <PieChart>
                       <Pie
                         data={eventDistribution}
@@ -357,7 +357,7 @@ const SecurityDashboard = () => {
                       </Pie>
                       <ChartTooltip content={<ChartTooltipContent />} />
                     </PieChart>
-                  </ResponsiveContainer>
+                  </ChartContainer>
                 ) : (
                   <p className="text-muted-foreground text-sm">No events in the last 7 days</p>
                 )}
