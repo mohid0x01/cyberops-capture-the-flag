@@ -43,10 +43,14 @@ const FAQ = () => {
               FAQ
             </span>
             <h2 className="font-display text-4xl md:text-6xl font-black text-foreground mb-5 tracking-tight">
-              Frequently Asked <span className="text-gradient">Questions</span>
+              {title.includes(" ") ? (
+                <>{title.split(" ").slice(0, -1).join(" ")} <span className="text-gradient">{title.split(" ").slice(-1)}</span></>
+              ) : (
+                <span className="text-gradient">{title}</span>
+              )}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Everything you need to know about participating in CyberOps CTF competitions
+              {subtitle}
             </p>
           </motion.div>
         </div>
