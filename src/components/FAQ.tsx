@@ -26,7 +26,6 @@ const FAQ = () => {
   const title = faqContent?.title || "Frequently Asked Questions";
   const subtitle = faqContent?.subtitle || "Everything you need to know about participating in CyberOps CTF competitions";
 
-const FAQ = () => {
   return (
     <section id="faq" className="py-28 relative overflow-hidden">
       {/* Background */}
