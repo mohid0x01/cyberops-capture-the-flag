@@ -10,8 +10,12 @@ import Contact from "@/components/Contact";
 import Sponsors from "@/components/Sponsors";
 import Footer from "@/components/Footer";
 import { initVisitorTracking } from "@/lib/visitorTracker";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Index = () => {
+  const { settings } = useSiteSettings();
+  const toggles = settings.feature_toggles;
+
   useEffect(() => {
     initVisitorTracking();
   }, []);
@@ -21,11 +25,11 @@ const Index = () => {
       <Navbar />
       <Hero />
       <Challenges />
-      <Leaderboard />
+      {toggles.leaderboard && <Leaderboard />}
       <About />
       <Resources />
       <FAQ />
-      <Contact />
+      {toggles.contact_form && <Contact />}
       <Sponsors />
       <Footer />
     </div>
