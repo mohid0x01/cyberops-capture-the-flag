@@ -18,8 +18,10 @@ const DashboardNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, isAdmin, signOut } = useAuth();
+  const { settings } = useSiteSettings();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const toggles = settings.feature_toggles;
 
   const handleSignOut = async () => {
     await signOut();
@@ -30,9 +32,9 @@ const DashboardNav = () => {
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { label: "Challenges", href: "/challenges", icon: Target },
     { label: "Categories", href: "/categories", icon: Layers },
-    { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
-    { label: "Teams", href: "/teams", icon: Users },
-    { label: "Writeups", href: "/writeups", icon: FileText },
+    ...(toggles.leaderboard ? [{ label: "Leaderboard", href: "/leaderboard", icon: Trophy }] : []),
+    ...(toggles.teams ? [{ label: "Teams", href: "/teams", icon: Users }] : []),
+    ...(toggles.writeups ? [{ label: "Writeups", href: "/writeups", icon: FileText }] : []),
     { label: "Profile", href: "/profile", icon: User },
     { label: "Settings", href: "/settings", icon: Settings },
   ];
