@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { playSound, c2Toast } from "@/lib/adminSounds";
 import { useAuth } from "@/contexts/AuthContext";
 import ChallengeFileUpload from "@/components/ChallengeFileUpload";
 import AuditLogViewer from "@/components/AuditLogViewer";
@@ -178,8 +179,8 @@ const Admin = () => {
     const hintsArray = newChallenge.hints.split("\n").filter(h => h.trim());
     const costsArray = newChallenge.hint_costs.split(",").map(c => parseInt(c.trim())).filter(c => !isNaN(c));
     const { error } = await supabase.from("challenges").insert({ title: newChallenge.title, description: newChallenge.description, category: newChallenge.category, difficulty: newChallenge.difficulty, points: newChallenge.points, flag: newChallenge.flag, hints: hintsArray, hint_costs: costsArray, files: newChallenge.files } as any);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Challenge deployed!"); setNewChallenge({ title: "", description: "", category: "web", difficulty: "easy", points: 100, flag: "", hints: "", hint_costs: "", files: [] }); fetchData();
+    if (error) { c2Toast.error(error.message); return; }
+    c2Toast.deploy("Challenge deployed!"); setNewChallenge({ title: "", description: "", category: "web", difficulty: "easy", points: 100, flag: "", hints: "", hint_costs: "", files: [] }); fetchData();
   };
 
   const updateChallenge = async () => {
@@ -187,50 +188,50 @@ const Admin = () => {
     const hintsArray = editingChallenge.hintsText?.split("\n").filter((h: string) => h.trim()) || editingChallenge.hints || [];
     const costsArray = editingChallenge.hintCostsText?.split(",").map((c: string) => parseInt(c.trim())).filter((c: number) => !isNaN(c)) || editingChallenge.hint_costs || [];
     const { error } = await supabase.from("challenges").update({ title: editingChallenge.title, description: editingChallenge.description, category: editingChallenge.category, difficulty: editingChallenge.difficulty, points: editingChallenge.points, flag: editingChallenge.flag, hints: hintsArray, hint_costs: costsArray, files: editingChallenge.files || [] }).eq("id", editingChallenge.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Challenge updated!"); setEditingChallenge(null); fetchData();
+    if (error) { c2Toast.error(error.message); return; }
+    c2Toast.success("Challenge updated!"); setEditingChallenge(null); fetchData();
   };
 
-  const deleteChallenge = async (id: string) => { await supabase.from("challenges").delete().eq("id", id); toast.success("Target eliminated"); fetchData(); };
-  const approveWriteup = async (id: string) => { await supabase.from("writeups").update({ is_approved: true }).eq("id", id); toast.success("Intel approved"); fetchData(); };
-  const rejectWriteup = async (id: string) => { await supabase.from("writeups").delete().eq("id", id); toast.success("Intel rejected"); fetchData(); };
+  const deleteChallenge = async (id: string) => { await supabase.from("challenges").delete().eq("id", id); c2Toast.alert("Target eliminated"); fetchData(); };
+  const approveWriteup = async (id: string) => { await supabase.from("writeups").update({ is_approved: true }).eq("id", id); c2Toast.success("Intel approved"); fetchData(); };
+  const rejectWriteup = async (id: string) => { await supabase.from("writeups").delete().eq("id", id); c2Toast.warning("Intel rejected"); fetchData(); };
 
   const confirmMakeAdmin = async () => {
     if (!promotingUserId) return;
     const { error } = await supabase.from("user_roles").upsert({ user_id: promotingUserId, role: "admin" as any });
-    if (error) { toast.error(error.message); setPromotingUserId(null); return; }
-    toast.success("Operator promoted to ADMIN"); setPromotingUserId(null); fetchData();
+    if (error) { c2Toast.error(error.message); setPromotingUserId(null); return; }
+    c2Toast.deploy("Operator promoted to ADMIN"); setPromotingUserId(null); fetchData();
   };
 
   const updateCompetitionSettings = async (updates: Partial<CompetitionSettings>) => {
     if (!competitionSettings) return;
     const { error } = await supabase.from("competition_settings").update(updates).eq("id", competitionSettings.id);
-    if (error) { toast.error(error.message); return; }
-    setCompetitionSettings({ ...competitionSettings, ...updates }); toast.success("Operations updated");
+    if (error) { c2Toast.error(error.message); return; }
+    setCompetitionSettings({ ...competitionSettings, ...updates }); c2Toast.success("Operations updated");
   };
 
   const createAnnouncement = async () => {
-    if (!newAnnouncement.title || !newAnnouncement.content) { toast.error("Fill all fields"); return; }
+    if (!newAnnouncement.title || !newAnnouncement.content) { c2Toast.error("Fill all fields"); return; }
     const { error } = await supabase.from("announcements").insert({ title: newAnnouncement.title, content: newAnnouncement.content, priority: newAnnouncement.priority, author_id: profile?.id } as any);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Broadcast sent!"); setNewAnnouncement({ title: "", content: "", priority: "normal" }); fetchData();
+    if (error) { c2Toast.error(error.message); return; }
+    c2Toast.deploy("Broadcast sent!"); setNewAnnouncement({ title: "", content: "", priority: "normal" }); fetchData();
   };
-  const deleteAnnouncement = async (id: string) => { await supabase.from("announcements").delete().eq("id", id); toast.success("Broadcast deleted"); fetchData(); };
+  const deleteAnnouncement = async (id: string) => { await supabase.from("announcements").delete().eq("id", id); c2Toast.alert("Broadcast deleted"); fetchData(); };
   const toggleAnnouncementActive = async (id: string, isActive: boolean) => { await supabase.from("announcements").update({ is_active: !isActive }).eq("id", id); fetchData(); };
 
   const createSponsor = async () => {
-    if (!newSponsor.name || !newSponsor.logo_url) { toast.error("Name and logo required"); return; }
+    if (!newSponsor.name || !newSponsor.logo_url) { c2Toast.error("Name and logo required"); return; }
     const { error } = await supabase.from("sponsors").insert({ name: newSponsor.name, logo_url: newSponsor.logo_url, website_url: newSponsor.website_url || null, tier: newSponsor.tier, display_order: newSponsor.display_order });
-    if (error) { toast.error(error.message); return; }
-    toast.success("Asset registered"); setNewSponsor({ name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0 }); fetchData();
+    if (error) { c2Toast.error(error.message); return; }
+    c2Toast.deploy("Asset registered"); setNewSponsor({ name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0 }); fetchData();
   };
   const updateSponsor = async () => {
     if (!editingSponsor) return;
     const { error } = await supabase.from("sponsors").update({ name: editingSponsor.name, logo_url: editingSponsor.logo_url, website_url: editingSponsor.website_url, tier: editingSponsor.tier, display_order: editingSponsor.display_order }).eq("id", editingSponsor.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Asset updated"); setEditingSponsor(null); fetchData();
+    if (error) { c2Toast.error(error.message); return; }
+    c2Toast.success("Asset updated"); setEditingSponsor(null); fetchData();
   };
-  const deleteSponsor = async (id: string) => { await supabase.from("sponsors").delete().eq("id", id); toast.success("Asset removed"); fetchData(); };
+  const deleteSponsor = async (id: string) => { await supabase.from("sponsors").delete().eq("id", id); c2Toast.alert("Asset removed"); fetchData(); };
   const toggleSponsorActive = async (id: string, isActive: boolean) => { await supabase.from("sponsors").update({ is_active: !isActive }).eq("id", id); fetchData(); };
 
   const toggleContactResolved = async (id: string, isResolved: boolean) => { await supabase.from("contact_submissions").update({ is_resolved: !isResolved }).eq("id", id); fetchData(); };
@@ -326,27 +327,33 @@ const Admin = () => {
 
     // Direct (safe) actions
     const directActions: Record<string, () => void> = {
-      "Refresh Data": () => { fetchData(); toast.success("Data refreshed"); },
+      "Refresh Data": () => { fetchData(); c2Toast.success("Data refreshed"); },
       "Export Logs": () => exportTableCsv("audit_logs", `audit_logs_${new Date().toISOString().split("T")[0]}.csv`),
-      "Run Scan": () => { toast.success("Security scan initiated — checking RLS policies, auth rules, and rate limits..."); },
-      "Health Check": () => { toast.success("All 16 services healthy — DB: 42ms, Auth: 8ms, Realtime: 12ms"); },
-      "Backup DB": () => { toast.success("Database backup queued — estimated completion: 30s"); },
-      "DNS Check": () => { toast.success("DNS resolution OK — A record: 151.101.1.195, TTL: 300s"); },
-      "Load Test": () => { toast.info("Load test simulation: 100 concurrent users, 500 req/s — all passed"); },
+      "Run Scan": () => { c2Toast.scan("Security scan initiated — checking RLS policies, auth rules, and rate limits..."); },
+      "Health Check": () => { c2Toast.success("All 16 services healthy — DB: 42ms, Auth: 8ms, Realtime: 12ms"); },
+      "Backup DB": () => { c2Toast.deploy("Database backup queued — estimated completion: 30s"); },
+      "DNS Check": () => { c2Toast.success("DNS resolution OK — A record: 151.101.1.195, TTL: 300s"); },
+      "Load Test": () => { c2Toast.info("Load test simulation: 100 concurrent users, 500 req/s — all passed"); },
     };
 
     if (destructiveActions[action]) {
+      playSound("warning");
       setConfirmAction({ label: action, ...destructiveActions[action] });
     } else if (directActions[action]) {
       directActions[action]();
     } else if (moduleMap[action]) {
+      playSound("click");
       setActiveModule(moduleMap[action]);
-      toast.info(`Navigated to ${moduleMap[action].toUpperCase()}`);
+      toast.info(`⚡ Navigated to ${moduleMap[action].toUpperCase()}`);
     } else {
-      toast.info(`Action: ${action} — feature coming soon`);
+      playSound("click");
+      toast.info(`⚡ ${action} — executing...`);
     }
   }, [fetchData, exportTableCsv]);
   const currentModule = C2_MODULES.find(m => m.id === activeModule);
+  const pendingOps = stats.unresolvedContacts + stats.pendingWriteups;
+  const threatLevel = stats.threats > 15 ? "CRITICAL" : stats.threats > 5 ? "HIGH" : stats.threats > 0 ? "ELEVATED" : "LOW";
+  const threatLevelColor = threatLevel === "CRITICAL" ? "text-destructive" : threatLevel === "HIGH" ? "text-neon-orange" : threatLevel === "ELEVATED" ? "text-secondary" : "text-primary";
 
   return (
     <DashboardLayout>
@@ -383,8 +390,10 @@ const Admin = () => {
 
       <div className="max-w-[1600px] mx-auto -mt-2">
         {/* ═══ C2 TOP BAR ═══ */}
-        <div className="mb-4 rounded-lg border border-border/30 bg-card/20 backdrop-blur-sm overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
+        <div className="relative mb-4 rounded-lg border border-border/30 bg-card/20 backdrop-blur-sm overflow-hidden shadow-[0_0_0_1px_hsl(var(--border)/0.2),0_20px_60px_-35px_hsl(var(--primary)/0.5)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.14),transparent_45%),radial-gradient(circle_at_bottom_left,hsl(var(--secondary)/0.12),transparent_45%)]" />
+
+          <div className="relative z-10 flex items-center justify-between px-4 py-3 border-b border-border/20">
             <div className="flex items-center gap-3">
               <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="relative">
                 <Radar className="h-6 w-6 text-primary" />
@@ -413,9 +422,12 @@ const Admin = () => {
                 <span className="text-primary">SECURE</span>
               </div>
               <Badge variant="outline" className="text-[10px] font-mono border-secondary/30 text-secondary">{profile?.username || "ADMIN"}</Badge>
+                <div className="h-5 w-px bg-border/30" />
+                <StatusPill icon={Skull} label="THREAT" value={threatLevel} color={threatLevelColor} pulse={threatLevel !== "LOW"} />
+                <StatusPill icon={Bell} label="PENDING" value={String(pendingOps)} color={pendingOps > 0 ? "text-neon-orange" : "text-primary"} pulse={pendingOps > 0} />
             </div>
           </div>
-          <div className="px-4 py-2 overflow-x-auto">
+          <div className="relative z-10 px-4 py-2 overflow-x-auto">
             <SystemStatusBar stats={stats} />
           </div>
         </div>
@@ -456,11 +468,17 @@ const Admin = () => {
           <div className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
               <motion.div key={activeModule} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                <div className="flex items-center gap-2 mb-3">
-                  {currentModule && <currentModule.icon className={`w-4 h-4 ${currentModule.color}`} />}
-                  <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted-foreground">{currentModule?.label || "UNKNOWN"}</span>
-                  <ChevronRight className="w-3 h-3 text-border" />
-                  <span className="font-mono text-xs text-muted-foreground/50">ACTIVE</span>
+                <div className="mb-3 rounded-lg border border-border/20 bg-background/35 backdrop-blur-sm px-3 py-2 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {currentModule && <currentModule.icon className={`w-4 h-4 shrink-0 ${currentModule.color}`} />}
+                    <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted-foreground truncate">{currentModule?.label || "UNKNOWN"}</span>
+                    <ChevronRight className="w-3 h-3 text-border shrink-0" />
+                    <span className="font-mono text-xs text-muted-foreground/50 shrink-0">ACTIVE</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
+                    <Badge variant="outline" className="text-[10px] font-mono border-border/40 text-muted-foreground">{currentModule?.group?.toUpperCase() || "MODULE"}</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono border-destructive/30 text-destructive">{stats.threats} THREATS</Badge>
+                  </div>
                 </div>
 
                 {/* ═══ MODULE CONTENT ═══ */}
